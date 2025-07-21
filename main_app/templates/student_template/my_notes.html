@@ -1,0 +1,8 @@
+{% for note in notes %}
+  <div>
+    <h3>{{ note.title }}</h3>
+    <p>{{ note.content|truncatewords:20 }}</p>
+    <a href="{% url 'download_note_txt' note.id %}">Download as TXT</a>
+    <a href="{% url 'download_note_pdf' note.id %}">Download as PDF</a>
+  </div>
+{% endfor %}

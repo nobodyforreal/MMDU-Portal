@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path # type: ignore
 
 from main_app.EditResultView import EditResultView
 
@@ -131,6 +131,11 @@ urlpatterns = [
          name='student_view_profile'),
     path("student/fcmtoken/", student_views.student_fcmtoken,
          name='student_fcmtoken'),
+    path('notes/download/<int:note_id>/', views.download_note_txt, name='download_note_txt'),
+    
+    path("student/view/notes/", views.my_notes, name='my_notes'),
+    path('notes/download/pdf/<int:note_id>/', views.download_note_pdf, name='download_note_pdf'),
+
      # path('student/todo',student_views.todo,name='todo'),
 
      

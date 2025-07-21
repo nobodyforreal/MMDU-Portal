@@ -1,16 +1,43 @@
 import json
-import requests
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
-from django.views.decorators.csrf import csrf_exempt
+import requests # type: ignore
+from django.contrib import messages # type: ignore
+from django.contrib.auth import authenticate, login, logout # type: ignore
+from django.http import HttpResponse, JsonResponse # type: ignore
+from django.shortcuts import get_object_or_404, redirect, render, reverse # type: ignore
+from django.views.decorators.csrf import csrf_exempt # type: ignore
+from reportlab.pdfgen import canvas # type: ignore
+from django.http import FileResponse # type: ignore
+import io
+from .models import Note
 
 from .EmailBackend import EmailBackend
 from .models import Attendance, Session, Subject 
 
 # Create your views here.
+@login_required # type: ignore
+def my_notes(request):
+    notes = Note.objects.filter(author=request.user) # type: ignore
+    return render(request, 'main_app/my_notes.html', {'notes': notes})
 
+@login_required # type: ignore
+def add_note(request):
+    if request.method == 'POST':
+        form = NoteForm(request.POST) # type: ignore
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.author = request.user
+            note.save()
+            return redirect('my_notes')
+    else:
+        form = NoteForm() # type: ignore
+    return render(request, 'main_app/add_note.html', {'form': form})
+
+@login_required # type: ignore
+def download_note_txt(request, note_id):
+    note = Note.objects.get(id=note_id, author=request.user)
+    response = HttpResponse(note.content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="{note.title}.txt"'
+    return response
 
 def login_page(request):
     if request.user.is_authenticated:
@@ -21,6 +48,32 @@ def login_page(request):
         else:
             return redirect(reverse("student_home"))
     return render(request, 'main_app/login.html')
+
+@login_required # type: ignore
+def download_note_pdf(request, note_id):
+    note = Note.objects.get(id=note_id, author=request.user)
+
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer)
+    p.setFont("Helvetica", 14)
+    p.drawString(100, 800, note.title)
+    
+    # Draw content with word wrap
+    from reportlab.lib.pagesizes import letter # type: ignore
+    from reportlab.platypus import Paragraph # type: ignore
+    from reportlab.lib.styles import getSampleStyleSheet # type: ignore
+
+    styles = getSampleStyleSheet()
+    para = Paragraph(note.content, styles["Normal"])
+    para.wrapOn(p, 450, 600)
+    para.drawOn(p, 100, 750 - 15)
+
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename=f"{note.title}.pdf")
+
 
 
 def doLogin(request, **kwargs):

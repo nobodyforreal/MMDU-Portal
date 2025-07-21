@@ -1,9 +1,9 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.hashers import make_password # type: ignore
+from django.contrib.auth.models import UserManager # type: ignore
+from django.dispatch import receiver # type: ignore
+from django.db.models.signals import post_save # type: ignore
+from django.db import models # type: ignore
+from django.contrib.auth.models import AbstractUser # type: ignore
 from datetime import datetime,timedelta
 
 
@@ -82,6 +82,17 @@ class Book(models.Model):
 
     def __str__(self):
         return str(self.name) + " ["+str(self.isbn)+']'
+
+# Notes
+class Note(models.Model):
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notes')
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.title
+
 
 
 class Student(models.Model):

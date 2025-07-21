@@ -1,5 +1,5 @@
-from django import forms
-from django.forms.widgets import DateInput, TextInput
+from django import forms # type: ignore
+from django.forms.widgets import DateInput, TextInput # type: ignore
 
 from .models import *
 from . import models
@@ -102,6 +102,11 @@ class SubjectForm(FormSettings):
     class Meta:
         model = Subject
         fields = ['name', 'staff', 'course']
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = Note
+        fields = ['title', 'content']
 
 
 class SessionForm(FormSettings):
